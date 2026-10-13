@@ -4,9 +4,10 @@
 """Tests that uninstrument() stops tracing on cached raw-response accessors.
 
 The SDK caches ``with_raw_response`` and ``with_streaming_response`` per
-client together with the wrapped ``create``, so a client that used an
-accessor while instrumented keeps tracing through it after
-``uninstrument()``. See issue #892.
+client together with the wrapped ``create``. Without the ``_active()``
+guard on the wrap sites, a client that used an accessor while
+instrumented kept tracing through it after ``uninstrument()``
+(issue #892); these tests pin the fixed behavior.
 """
 
 import anthropic._base_client as base_client
