@@ -10,6 +10,8 @@ instrumented kept tracing through it after ``uninstrument()``
 (issue #892); these tests pin the fixed behavior.
 """
 
+import inspect
+
 import anthropic._base_client as base_client
 import pytest
 from anthropic import Anthropic, AsyncAnthropic
@@ -82,7 +84,11 @@ async def _call_async(client: AsyncAnthropic, accessor: str) -> None:
             await response.parse()
     else:
         raw = await getattr(client.messages, accessor).create(**_KW)
-        await raw.parse()
+        parsed = raw.parse()
+        # Older anthropic versions return the parsed message directly from
+        # the async raw-response accessor instead of a coroutine.
+        if inspect.isawaitable(parsed):
+            await parsed
 
 
 @pytest.mark.parametrize(
